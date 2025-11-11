@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import { RouteLoader } from "./components/RouteLoader";
+import Header from "./components/header";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,7 +23,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Header brand="Oasis" cartCount={2} />
+        <RouteLoader>{children}</RouteLoader>
       </body>
     </html>
   );
