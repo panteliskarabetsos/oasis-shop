@@ -22,15 +22,15 @@ import {
 } from "lucide-react";
 
 // shadcn/ui
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Input } from "../components/ui/input";
+} from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
 
 // --- Cretan foods only ---
 const categories = [
@@ -178,12 +178,12 @@ export default function OasisShopHome() {
     router.push(`/shop?tag=${encodeURIComponent(tag)}`);
 
   return (
-    <div className="min-h-screen bg-[#f4f1ec] text-[#4a4a4a]">
+    <div className="py-10 min-h-screen bg-[#f4f1ec] text-[#4a4a4a]">
       {/* Ambient backdrop */}
       <AmbientBackground />
 
       {/* Announcement bar */}
-      <AnnouncementBar />
+      {/* /   <AnnouncementBar /> */}
 
       {/* HERO */}
       <section className="relative" aria-labelledby="hero-heading">
@@ -674,7 +674,7 @@ function AnnouncementBar() {
 
 function AmbientBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 opacity-50 [mask-image:radial-gradient(60%_40%_at_50%_0%,black,transparent)]">
+    <div className="pointer-events-none fixed inset-0 -z-10 opacity-50 mask-[radial-gradient(60%_40%_at_50%_0%,black,transparent)]">
       {/* Sandy beige */}
       <div className="absolute -top-24 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-[#e6dccf] blur-3xl" />
       {/* Soft terracotta */}
