@@ -32,12 +32,13 @@ import {
 import { Badge } from "../../components/ui/badge";
 import { Input } from "../../components/ui/input";
 
-// --- Cretan foods only ---
+/* ------------------------------- Data ------------------------------- */
+// Static storefront categories (keep until you add a categories table)
 const categories = [
   {
     slug: "olive-oil",
     title: "Olive Oil",
-    blurb: "Cold‑pressed, small‑batch, PDO/PGI.",
+    blurb: "Cold-pressed, small-batch, PDO/PGI.",
     icon: Droplets,
     image: "/oil.jpg",
   },
@@ -72,100 +73,46 @@ const categories = [
   {
     slug: "olives",
     title: "Olives",
-    blurb: "Sun‑cured olives, capers & more.",
+    blurb: "Sun-cured olives, capers & more.",
     icon: Leaf,
     image: "/olives.jpg",
   },
 ];
 
-const products = [
-  {
-    id: "evoo-estate-pdo",
-    name: "Estate Extra Virgin Olive Oil (PDO)",
-    desc: "Koroneiki, first cold press, <0.3% acidity.",
-    price: 18.9,
-    image:
-      "https://images.unsplash.com/photo-1546549039-49a1d8532b0c?q=80&w=1600&auto=format&fit=crop",
-    badge: "Bestseller",
-    rating: 5,
-  },
-  {
-    id: "honey-thyme-raw",
-    name: "Raw Thyme Honey 450g",
-    desc: "Unfiltered, naturally crystallizing sweetness.",
-    price: 11.5,
-    image:
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop",
-    badge: "New Harvest",
-    rating: 5,
-  },
-  {
-    id: "tea-mountain-sideritis",
-    name: "Cretan Mountain Tea",
-    desc: "Organic sideritis from Psiloritis slopes.",
-    price: 7.9,
-    image:
-      "https://images.unsplash.com/photo-1485550409059-9afb054cada4?q=80&w=1600&auto=format&fit=crop",
-    badge: "Organic",
-    rating: 5,
-  },
-  {
-    id: "olives-sundried",
-    name: "Sun‑Dried Olives 300g",
-    desc: "Bold, salty‑sweet, naturally cured.",
-    price: 6.5,
-    image:
-      "https://images.unsplash.com/photo-1604908554007-860d7ea2b63a?q=80&w=1600&auto=format&fit=crop",
-    badge: "Small‑batch",
-    rating: 4,
-  },
-  {
-    id: "wine-vidiano",
-    name: "Vidiano White 750ml",
-    desc: "Elegant native variety with stone‑fruit notes.",
-    price: 14.9,
-    image:
-      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=1600&auto=format&fit=crop",
-    badge: "Estate",
-    rating: 5,
-  },
-  {
-    id: "paximadi-barley",
-    name: "Barley Paximadi Rusks 500g",
-    desc: "Traditional twice‑baked Cretan rusks.",
-    price: 4.9,
-    image:
-      "https://images.unsplash.com/photo-1604908554262-398a422f77ab?q=80&w=1600&auto=format&fit=crop",
-    badge: "Traditional",
-    rating: 5,
-  },
-  {
-    id: "marmalade-orange",
-    name: "Bitter Orange Marmalade",
-    desc: "Copper‑pot cooked, low sugar, high fruit.",
-    price: 6.9,
-    image:
-      "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1600&auto=format&fit=crop",
-    badge: "Handmade",
-    rating: 5,
-  },
-  {
-    id: "carob-syrup",
-    name: "Carob Syrup 250ml",
-    desc: "Rich, malty Crete classic for desserts.",
-    price: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1566843972141-8fbf25b3f407?q=80&w=1600&auto=format&fit=crop",
-    badge: "Artisan",
-    rating: 4,
-  },
-];
-
+/* ------------------------------- Page ------------------------------- */
 export default function OasisShopHome() {
   const router = useRouter();
 
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [products, setProducts] = React.useState([]);
+
+  // Load featured (active) products with primary image
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/shop/featured?limit=8", {
+          cache: "no-store",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Failed to load products");
+        if (!cancelled) setProducts(data || []);
+      } catch (e) {
+        if (!cancelled) setError(e.message || String(e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const addToCart = (p) => {
-    console.log("Add to cart:", p.id);
+    // hook this to your cart store
+    console.log("Add to cart:", p.slug);
   };
 
   const onSearch = (e) => {
@@ -178,12 +125,8 @@ export default function OasisShopHome() {
     router.push(`/shop?tag=${encodeURIComponent(tag)}`);
 
   return (
-    <div className="py-10 min-h-screen bg-[#f4f1ec] text-[#4a4a4a]">
-      {/* Ambient backdrop */}
+    <div className="min-h-screen bg-[#f4f1ec] py-10 text-[#4a3f35]">
       <AmbientBackground />
-
-      {/* Announcement bar */}
-      {/* /   <AnnouncementBar /> */}
 
       {/* HERO */}
       <section className="relative" aria-labelledby="hero-heading">
@@ -207,7 +150,7 @@ export default function OasisShopHome() {
                     priority
                   />
                   <div
-                    className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent"
+                    className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"
                     aria-hidden
                   />
                 </div>
@@ -244,7 +187,7 @@ export default function OasisShopHome() {
                 </Badge>
                 <h1
                   id="hero-heading"
-                  className="text-4xl font-serif font-medium tracking-tight text-[#5a4a3f] sm:text-5xl lg:text-[56px] lg:leading-[1.1]"
+                  className="text-4xl font-serif font-medium tracking-tight text-[#4a3f35] sm:text-5xl lg:text-[56px] lg:leading-[1.1]"
                 >
                   Crete’s pantry.{" "}
                   <span className="text-[#8b6f47]">Delivered</span> to your
@@ -268,7 +211,7 @@ export default function OasisShopHome() {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="rounded-2xl border-[#e0dcd4] bg-white px-6 py-6 text-base text-[#5a4a3f] backdrop-blur transition-colors hover:bg-[#faf7f1] focus-visible:ring-2 focus-visible:ring-[#8b6f47]/30"
+                    className="rounded-2xl border-[#e0dcd4] bg-white px-6 py-6 text-base text-[#4a3f35] backdrop-blur transition-colors hover:bg-[#faf7f1] focus-visible:ring-2 focus-visible:ring-[#8b6f47]/30"
                   >
                     <Link
                       href="/experiences"
@@ -291,7 +234,7 @@ export default function OasisShopHome() {
                     <Input
                       name="q"
                       placeholder="Search olive oil, honey, teas…"
-                      className="h-11 flex-1 border-0 bg-transparent text-[#5a4a3f] placeholder:text-[#8b6f47]/60 focus-visible:ring-0"
+                      className="h-11 flex-1 border-0 bg-transparent text-[#4a3f35] placeholder:text-[#8b6f47]/60 focus-visible:ring-0"
                       aria-label="Search query"
                     />
                   </div>
@@ -305,8 +248,8 @@ export default function OasisShopHome() {
 
                 {/* Quick filters */}
                 <div className="mt-4 no-scrollbar relative -mx-1 flex gap-2 overflow-x-auto py-1 px-1">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-linear-to-r from-[#f4f1ec] to-transparent" />
-                  <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-linear-to-l from-[#f4f1ec] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-[#f4f1ec] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-[#f4f1ec] to-transparent" />
                   {[
                     "Olive Oil",
                     "Honey",
@@ -318,7 +261,7 @@ export default function OasisShopHome() {
                     <Button
                       key={n}
                       variant="outline"
-                      className="rounded-full border-[#e0dcd4] bg-white/70 text-[#5a4a3f] hover:bg-[#faf7f1]"
+                      className="rounded-full border-[#e0dcd4] bg-white/70 text-[#4a3f35] hover:bg-[#faf7f1]"
                       onClick={() => onQuickFilter(n.toLowerCase())}
                     >
                       {n}
@@ -329,8 +272,8 @@ export default function OasisShopHome() {
                 {/* Trust */}
                 <div className="mt-8 grid grid-cols-2 gap-3 text-sm text-neutral-700 sm:grid-cols-4">
                   <TrustPill icon={ShieldCheck} label="PDO/PGI Quality" />
-                  <TrustPill icon={Leaf} label="Small‑batch producers" />
-                  <TrustPill icon={Recycle} label="Plastic‑free ship" />
+                  <TrustPill icon={Leaf} label="Small-batch producers" />
+                  <TrustPill icon={Recycle} label="Plastic-free ship" />
                   <TrustPill icon={Truck} label="Fast EU delivery" />
                 </div>
               </motion.div>
@@ -355,17 +298,17 @@ export default function OasisShopHome() {
             />
           </div>
           <div>
-            <Badge className="mb-4 bg-[#efeae2] text-[#5a4a3f] hover:bg-[#efeae2]">
+            <Badge className="mb-4 bg-[#efeae2] text-[#4a3f35] hover:bg-[#efeae2]">
               Our Home
             </Badge>
             <h2
               id="connect-heading"
-              className="text-3xl font-serif font-medium tracking-tight text-[#5a4a3f] sm:text-4xl"
+              className="text-3xl font-serif font-medium tracking-tight text-[#4a3f35] sm:text-4xl"
             >
               From our orchards & beehives
             </h2>
             <p className="mt-4 text-[#6b625a]">
-              Our e‑shop is an extension of our{" "}
+              Our e-shop is an extension of our{" "}
               <strong>agrotourism and farm life</strong> in Crete. The foods
               here are the same we grow, harvest and share with our guests.
             </p>
@@ -391,7 +334,7 @@ export default function OasisShopHome() {
         <div className="mb-6 flex items-center justify-between">
           <h2
             id="categories-heading"
-            className="text-2xl font-serif font-medium tracking-tight text-[#5a4a3f]"
+            className="text-2xl font-serif font-medium tracking-tight text-[#4a3f35]"
           >
             Shop by category
           </h2>
@@ -409,39 +352,7 @@ export default function OasisShopHome() {
         </div>
       </section>
 
-      {/* FEATURED BENTO */}
-      {/* <section
-        className="mx-auto max-w-7xl px-6"
-        aria-labelledby="featured-heading"
-      >
-        <h2 id="featured-heading" className="sr-only">
-          Featured picks
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-5">
-          <BentoTile
-            className="sm:col-span-3"
-            title="Cretan Pantry Box"
-            blurb="EVOO + thyme honey + olives + rusks."
-            image="/cretan-goods.jpeg"
-            badge="Bundle"
-            href="/product/box-pantry"
-          />
-          <BentoTile
-            title="Estate EVOO (PDO)"
-            blurb="Koroneiki single‑estate, first cold press."
-            image="https://images.unsplash.com/photo-1510627498534-cf7e9002facc?q=80&w=1600&auto=format&fit=crop"
-            href="/product/evoo-estate-pdo"
-          />
-          <BentoTile
-            title="Raw Thyme Honey"
-            blurb="Unfiltered, aromatic and golden."
-            image="https://images.unsplash.com/photo-1499195333224-3ce974eecb47?q=80&w=1600&auto=format&fit=crop"
-            href="/product/honey-thyme-raw"
-          />
-        </div>
-      </section> */}
-
-      {/* PRODUCTS */}
+      {/* PRODUCTS (REAL DATA) */}
       <section
         id="products"
         className="mx-auto max-w-7xl px-6 py-16"
@@ -450,7 +361,7 @@ export default function OasisShopHome() {
         <div className="mb-6 flex items-center justify-between">
           <h2
             id="products-heading"
-            className="text-2xl font-serif font-medium tracking-tight text-[#5a4a3f]"
+            className="text-2xl font-serif font-medium tracking-tight text-[#4a3f35]"
           >
             Featured products
           </h2>
@@ -461,10 +372,21 @@ export default function OasisShopHome() {
             Browse catalog
           </Link>
         </div>
+
+        {error ? (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} p={p} onAdd={() => addToCart(p)} />
-          ))}
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))
+            : products.map((p) => (
+                <ProductCard key={p.slug} p={p} onAdd={() => addToCart(p)} />
+              ))}
         </div>
       </section>
 
@@ -475,18 +397,18 @@ export default function OasisShopHome() {
         aria-labelledby="ethos-heading"
       >
         <div className="mb-8 text-center">
-          <Badge className="bg-[#efeae2] text-[#5a4a3f] hover:bg-[#efeae2]">
+          <Badge className="bg-[#efeae2] text-[#4a3f35] hover:bg-[#efeae2]">
             Our ethos
           </Badge>
           <h2
             id="ethos-heading"
-            className="mt-3 text-3xl font-serif font-medium tracking-tight text-[#5a4a3f] sm:text-4xl"
+            className="mt-3 text-3xl font-serif font-medium tracking-tight text-[#4a3f35] sm:text-4xl"
           >
             Rooted in Crete
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-[#6b625a]">
-            We aren’t just a shop; we’re a family‑run project. We source
-            directly from our own land and from neighboring small‑batch
+            We aren’t just a shop; we’re a family-run project. We source
+            directly from our own land and from neighboring small-batch
             producers who share our values.
           </p>
         </div>
@@ -499,7 +421,7 @@ export default function OasisShopHome() {
           <EthosCard
             icon={Sparkles}
             title="Traditional Methods"
-            text="Generational know‑how, low intervention."
+            text="Generational know-how, low intervention."
           />
           <EthosCard
             icon={Heart}
@@ -508,8 +430,8 @@ export default function OasisShopHome() {
           />
           <EthosCard
             icon={Recycle}
-            title="Low‑Impact"
-            text="Plastic‑free, recyclable packaging."
+            title="Low-Impact"
+            text="Plastic-free, recyclable packaging."
           />
         </div>
       </section>
@@ -522,7 +444,7 @@ export default function OasisShopHome() {
         <div className="mb-6 flex items-center justify-between">
           <h2
             id="testimonials-heading"
-            className="text-2xl font-serif font-medium tracking-tight text-[#5a4a3f]"
+            className="text-2xl font-serif font-medium tracking-tight text-[#4a3f35]"
           >
             Loved by our community
           </h2>
@@ -537,7 +459,7 @@ export default function OasisShopHome() {
             author="Nikos P."
           />
           <TestimonialCard
-            text="Speedy delivery in plastic‑free packaging. Will be gifting the pantry box!"
+            text="Speedy delivery in plastic-free packaging. Will be gifting the pantry box!"
             author="Maria L."
           />
         </div>
@@ -553,7 +475,7 @@ export default function OasisShopHome() {
             <div>
               <h3
                 id="newsletter-heading"
-                className="text-2xl font-serif font-medium tracking-tight text-[#5a4a3f]"
+                className="text-2xl font-serif font-medium tracking-tight text-[#4a3f35]"
               >
                 Join the Oasis list
               </h3>
@@ -572,7 +494,7 @@ export default function OasisShopHome() {
                   name="email"
                   type="email"
                   placeholder="you@example.com"
-                  className="h-11 flex-1 rounded-xl border-[#e0dcd4] text-[#5a4a3f] placeholder:text-[#8b6f47]/60"
+                  className="h-11 flex-1 rounded-xl border-[#e0dcd4] text-[#4a3f35] placeholder:text-[#8b6f47]/60"
                   required
                   aria-label="Email address"
                 />
@@ -607,7 +529,7 @@ export default function OasisShopHome() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-[#e8e2d8] bg-white px-6 py-10 text-center shadow-[0_6px_24px_rgba(60,50,39,0.06)] sm:flex-row sm:text-left">
           <div>
-            <h3 className="text-xl font-serif font-medium text-[#5a4a3f]">
+            <h3 className="text-xl font-serif font-medium text-[#4a3f35]">
               Ready to stock your pantry?
             </h3>
             <p className="text-[#6b625a]">
@@ -624,7 +546,7 @@ export default function OasisShopHome() {
             <Button
               asChild
               variant="outline"
-              className="rounded-xl border-[#e0dcd4] bg-white text-[#5a4a3f] hover:bg-[#faf7f1]"
+              className="rounded-xl border-[#e0dcd4] bg-white text-[#4a3f35] hover:bg-[#faf7f1]"
             >
               <Link href="/about">About Oasis</Link>
             </Button>
@@ -638,16 +560,16 @@ export default function OasisShopHome() {
             © {new Date().getFullYear()} Oasis Cretan Wellness
           </p>
           <div className="flex items-center gap-5 text-sm">
-            <Link href="/shipping" className="hover:text-[#5a4a3f]">
+            <Link href="/shipping" className="hover:text-[#4a3f35]">
               Shipping
             </Link>
-            <Link href="/returns" className="hover:text-[#5a4a3f]">
+            <Link href="/returns" className="hover:text-[#4a3f35]">
               Returns
             </Link>
-            <Link href="/experiences" className="hover:text-[#5a4a3f]">
+            <Link href="/experiences" className="hover:text-[#4a3f35]">
               Experiences
             </Link>
-            <Link href="/contact" className="hover:text-[#5a4a3f]">
+            <Link href="/contact" className="hover:text-[#4a3f35]">
               Contact
             </Link>
           </div>
@@ -659,22 +581,9 @@ export default function OasisShopHome() {
 
 /* ---------------------------- Components ---------------------------- */
 
-function AnnouncementBar() {
-  return (
-    <div className="bg-[#5a4a3f] text-white">
-      <div className="mx-auto max-w-7xl px-6 py-2 text-center text-sm">
-        <Link href="/shipping" className="underline-offset-2 hover:underline">
-          Free EU shipping over €50
-        </Link>{" "}
-        · Easy 30‑day returns
-      </div>
-    </div>
-  );
-}
-
 function AmbientBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 opacity-50 mask-[radial-gradient(60%_40%_at_50%_0%,black,transparent)]">
+    <div className="pointer-events-none fixed inset-0 -z-10 opacity-50 [mask-image:radial-gradient(60%_40%_at_50%_0%,black,transparent)]">
       {/* Sandy beige */}
       <div className="absolute -top-24 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-[#e6dccf] blur-3xl" />
       {/* Soft terracotta */}
@@ -687,7 +596,7 @@ function TrustPill({ icon: Icon, label }) {
   return (
     <div className="flex items-center gap-2 rounded-full border border-[#e8e2d8] bg-white px-3 py-2 shadow-sm">
       <Icon className="h-4 w-4 text-[#8b6f47]" aria-hidden />
-      <span className="text-sm text-[#5a4a3f]">{label}</span>
+      <span className="text-sm text-[#4a3f35]">{label}</span>
     </div>
   );
 }
@@ -712,7 +621,7 @@ function CategoryCard({ slug, title, blurb, icon: Icon, image }) {
         />
       </div>
       <div className="p-5">
-        <div className="mb-1 flex items-center gap-2 text-[#5a4a3f]">
+        <div className="mb-1 flex items-center gap-2 text-[#4a3f35]">
           <span className="rounded-xl bg-[#efeae2] p-2">
             <Icon className="h-4 w-4 text-[#8b6f47]" aria-hidden />
           </span>
@@ -724,47 +633,11 @@ function CategoryCard({ slug, title, blurb, icon: Icon, image }) {
   );
 }
 
-function BentoTile({ title, blurb, image, badge, href = "#", className = "" }) {
-  return (
-    <Link
-      href={href}
-      className={`group relative overflow-hidden rounded-3xl border border-[#e8e2d8] bg-white shadow-[0_6px_24px_rgba(60,50,39,0.06)] transition-all hover:shadow-[0_10px_30px_rgba(60,50,39,0.10)] ${className}`}
-    >
-      <div className="relative aspect-[3/2]">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          sizes="(min-width: 640px) 40vw, 100vw"
-          className="object-cover transition duration-500 group-hover:scale-[1.02]"
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-transparent"
-          aria-hidden
-        />
-        {badge && (
-          <div className="absolute left-4 top-4">
-            <Badge className="rounded-full bg:white/90 bg-white/90 text-[#5a4a3f] shadow-sm">
-              {badge}
-            </Badge>
-          </div>
-        )}
-      </div>
-      <div className="p-5">
-        <h3 className="text-lg font-serif font-medium text-[#5a4a3f]">
-          {title}
-        </h3>
-        <p className="mt-1 text-sm text-[#6b625a]">{blurb}</p>
-      </div>
-    </Link>
-  );
-}
-
 function EthosCard({ icon: Icon, title, text }) {
   return (
-    <Card className="rounded-3xl border-[#e8e2d8] bg:white bg-white shadow-[0_6px_24px_rgba(60,50,39,0.06)]">
+    <Card className="rounded-3xl border-[#e8e2d8] bg-white shadow-[0_6px_24px_rgba(60,50,39,0.06)]">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base font-serif font-medium text-[#5a4a3f]">
+        <CardTitle className="flex items-center gap-2 text-base font-serif font-medium text-[#4a3f35]">
           <span className="rounded-xl bg-[#efeae2] p-2">
             <Icon className="h-4 w-4 text-[#8b6f47]" aria-hidden />
           </span>
@@ -780,7 +653,7 @@ function EthosCard({ icon: Icon, title, text }) {
 
 function TestimonialCard({ text, author }) {
   return (
-    <Card className="rounded-3xl border-[#e8e2d8] bg:white bg-white shadow-[0_6px_24px_rgba(60,50,39,0.06)]">
+    <Card className="rounded-3xl border-[#e8e2d8] bg-white shadow-[0_6px_24px_rgba(60,50,39,0.06)]">
       <CardContent className="p-6">
         <div
           className="mb-2 flex items-center gap-1 text-[#b45309]"
@@ -793,7 +666,7 @@ function TestimonialCard({ text, author }) {
           <Star className="h-4 w-4 fill-current" />
         </div>
         <span className="sr-only">5 out of 5 stars</span>
-        <p className="text-[#4a4a4a] italic">“{text}”</p>
+        <p className="text-[#4a3f35] italic">“{text}”</p>
         <p className="mt-3 text-sm font-medium text-[#8b6f47]">— {author}</p>
       </CardContent>
     </Card>
@@ -801,7 +674,7 @@ function TestimonialCard({ text, author }) {
 }
 
 function ProductCard({ p, onAdd = () => {} }) {
-  const productUrl = `/product/${p.id}`;
+  const productUrl = `/product/${encodeURIComponent(p.slug)}`;
 
   const handleAddClick = (e) => {
     e.stopPropagation();
@@ -814,19 +687,12 @@ function ProductCard({ p, onAdd = () => {} }) {
       <Link href={productUrl}>
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
-            src={p.image}
-            alt={p.name}
+            src={p.image_url || "/placeholder-product.jpg"}
+            alt={p.title}
             fill
             sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition duration-500 group-hover:scale-[1.03]"
           />
-          {p.badge && (
-            <div className="absolute left-3 top-3">
-              <Badge className="rounded-full bg-white/90 text-[#5a4a3f] shadow-sm">
-                {p.badge}
-              </Badge>
-            </div>
-          )}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             aria-hidden
@@ -834,32 +700,27 @@ function ProductCard({ p, onAdd = () => {} }) {
         </div>
       </Link>
       <CardHeader className="px-5 pb-1 pt-4">
-        <CardTitle className="text-base font-serif font-medium text-[#5a4a3f]">
+        <CardTitle className="text-base font-serif font-medium text-[#4a3f35]">
           <Link href={productUrl} className="transition hover:text-[#8b6f47]">
-            {p.name}
+            {p.title}
           </Link>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-5 pb-5 text-sm text-[#6b625a]">
-        <p>{p.desc}</p>
-        <div
-          className="mt-3 flex items-center gap-1 text-[#b45309]"
-          aria-hidden
-        >
-          {Array.from({ length: p.rating || 5 }).map((_, i) => (
-            <Star key={i} className="h-4 w-4 fill-current" />
-          ))}
-        </div>
-        <span className="sr-only">Rated {p.rating || 5} out of 5</span>
+        {p.description ? (
+          <p className="line-clamp-2">{p.description}</p>
+        ) : (
+          <div className="h-[1.25rem]" />
+        )}
         <div className="mt-4 flex items-center justify-between">
-          <div className="font-medium text-[#5a4a3f]">
-            €{p.price.toFixed(2)}
+          <div className="font-medium text-[#4a3f35]">
+            {formatCents(p.price_cents, p.currency)}
           </div>
           <div className="flex items-center gap-2">
             <Button
               onClick={handleAddClick}
               className="rounded-xl bg-[#8b6f47] text-white transition-colors hover:bg-[#a78b62]"
-              aria-label={`Add ${p.name} to cart`}
+              aria-label={`Add ${p.title} to cart`}
             >
               Add
             </Button>
@@ -868,4 +729,33 @@ function ProductCard({ p, onAdd = () => {} }) {
       </CardContent>
     </Card>
   );
+}
+
+function ProductSkeleton() {
+  return (
+    <Card className="overflow-hidden rounded-3xl border-[#e8e2d8] bg-white">
+      <div className="relative aspect-[4/3] animate-pulse bg-[#eee]" />
+      <div className="p-5 space-y-2">
+        <div className="h-4 w-2/3 animate-pulse rounded bg-[#eee]" />
+        <div className="h-3 w-full animate-pulse rounded bg-[#f0f0f0]" />
+        <div className="mt-4 flex items-center justify-between">
+          <div className="h-4 w-16 animate-pulse rounded bg-[#eee]" />
+          <div className="h-9 w-20 animate-pulse rounded bg-[#eee]" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/* ------------------------------- Utils ------------------------------ */
+function formatCents(cents, currency = "EUR") {
+  const v = Number(cents || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).format(v);
+  } catch {
+    return `€${v.toFixed(2)}`;
+  }
 }
