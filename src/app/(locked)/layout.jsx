@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+
+
 export default function LockedLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();

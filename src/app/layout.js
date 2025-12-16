@@ -1,4 +1,3 @@
-// src/app/layout.js
 import ClientShell from "@/components/ClientShell";
 import "./globals.css";
 
